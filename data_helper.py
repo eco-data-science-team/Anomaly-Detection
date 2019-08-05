@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
+from matplotlib.pyplot import figure
+figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
 
 def print_report(df, show_plot = True, separate_plots = False):
     """
@@ -38,6 +40,27 @@ def print_report(df, show_plot = True, separate_plots = False):
         else:
             df.plot(subplots = True, figsize = (15,8), linewidth = 1)
 
+def check_kwargs(kwargs):
+    if not isinstance(kwargs['point'], str):
+        raise TypeError("'point' must be of  type 'str'")
+        
+    if not (kwargs['training_percent'] > 0.0 and kwargs['training_percent'] < 1.0):
+        raise ValueError("'training_percent' must be value between 0.0 and 1.0 exclusive")
+        
+    if not (kwargs['clean_type'] == 'value' or kwargs['clean_type'] == 'iqr'):
+        raise ValueError("'clean_type' must be either 'value' or 'iqr'")
+        
+    if not (isinstance(kwargs['threshold'], int) or isinstance(kwargs['threshold'], float)):
+        raise TypeError("'threshold' must be of type 'int' or 'float'")
+        
+    if not (kwargs['model_type'] == 'LSTM' or kwargs['model_type'] == 'Random Forest'):
+        raise ValueError("'model_type' must be either 'LSTM' or 'Random Forest'")
+        
+    if not isinstance(kwargs['train_on_residuals'], bool):
+        raise TypeError("'train_on_residuals' must be of type 'bool'")
+        
+    return "Good values!"
+
 #Created by Emma Goldberg
 def split_data(data, split = 0.7):
     """
@@ -70,8 +93,8 @@ def split_data(data, split = 0.7):
     return training, testing
 
 #function created by Emma Goldberg
-def clean_data(data, threshold,type_clean = 'value', plot=True):
-     """
+def clean_data(data, threshold, type_clean = 'value', plot=True):
+    """
     function: cleans the data using either a one-value threshold method or an iqr method
     params: 
             type_clean: if 'value' is used as the default, uses the threshold method. if 
@@ -96,7 +119,8 @@ def clean_data(data, threshold,type_clean = 'value', plot=True):
                 else:
                     #actually clean the data
                     cleaned_data = data[data.values > threshold]
-         if plot is True:
+        if plot is True:
+            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
             plt.plot(data.index, data.values, label = 'data')
             plt.axhline(y=threshold, color = 'red', linewidth=1)
             plt.xticks(rotation=60)
@@ -123,6 +147,7 @@ def clean_data(data, threshold,type_clean = 'value', plot=True):
                 cleaned_data = data[data.values > lower_bound]
                 cleaned_data = data[data.values < upper_bound]
         if plot is True:
+            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
             plt.plot(data.index, data.values)
             plt.axhline(y=upper_bound, color = 'red', linewidth=1)
             plt.axhline(y=lower_bound, color = 'red', linewidth=1)
