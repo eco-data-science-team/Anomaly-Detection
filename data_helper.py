@@ -70,7 +70,7 @@ def split_data(data, split = 0.7):
     return training, testing
 
 #function created by Emma Goldberg
-def clean_data(data, threshold,type_clean = 'value'):
+def clean_data(data, threshold,type_clean = 'value', plot=True):
     if type_clean == 'value':
         if isinstance(data, pd.Series) is False:
             raise TypeError("Your data needs to be in a Series format.")
@@ -87,6 +87,12 @@ def clean_data(data, threshold,type_clean = 'value'):
                 else:
                     #actually clean the data
                     cleaned_data = data[data.values > threshold]
+         if plot is True:
+            plt.plot(data.index, data.values, label = 'data')
+            plt.axhline(y=threshold, color = 'red', linewidth=1)
+            plt.xticks(rotation=60)
+            plt.xlabel("Time")
+            plt.ylabel("Data")
         return cleaned_data
     else:
         #check that the data is a series
@@ -105,8 +111,15 @@ def clean_data(data, threshold,type_clean = 'value'):
                 upper_bound = q3 +(threshold * iqr) 
                 print("lower_bound: %f" %lower_bound,"and","upper_bound: %f" %upper_bound)
                 #clean the data
-                data = data[data.values > lower_bound]
+                cleaned_data = data[data.values > lower_bound]
                 cleaned_data = data[data.values < upper_bound]
+        if plot is True:
+            plt.plot(data.index, data.values)
+            plt.axhline(y=upper_bound, color = 'red', linewidth=1)
+            plt.axhline(y=lower_bound, color = 'red', linewidth=1)
+            plt.xticks(rotation=60)
+            plt.xlabel("Time")
+            plt.ylabel("Data")
         return cleaned_data           
 
 def create_standard_multivariable_df(df, point_location = 0, shift = 1, rename_OAT = True, dropna = True):
