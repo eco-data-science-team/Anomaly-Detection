@@ -71,6 +71,15 @@ def split_data(data, split = 0.7):
 
 #function created by Emma Goldberg
 def clean_data(data, threshold,type_clean = 'value', plot=True):
+     """
+    function: cleans the data using either a one-value threshold method or an iqr method
+    params: 
+            type_clean: if 'value' is used as the default, uses the threshold method. if 
+            another is specified, then the function will use the IQR method.
+            plot: shows a plot of the data and the threshold for outliers if used.
+    returns:
+            the cleaned data as a Series, and a plot of the data with the outlier threshold if specified.
+    """
     if type_clean == 'value':
         if isinstance(data, pd.Series) is False:
             raise TypeError("Your data needs to be in a Series format.")
