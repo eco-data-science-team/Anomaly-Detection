@@ -38,6 +38,77 @@ def print_report(df, show_plot = True, separate_plots = False):
         else:
             df.plot(subplots = True, figsize = (15,8), linewidth = 1)
 
+#Created by Emma Goldberg
+def split_data(data, split = 0.7):
+    """
+    function: splits the data into a training and testing set
+    params: 
+          data- A Pandas Series
+          split- Float, the percentage user wants to split the training into
+                 must be a value 0 < split < 1.0
+    returns:
+          this functions returns the training and split series into two separate
+          Pandas Series
+    """
+    #check that our data is still a Series
+    if isinstance(data, pd.Series) is False:
+        raise TypeError("Your data needs to be in a Series format.")
+    else:
+        #check that split is a float value
+        if isinstance(split, float) is False:
+            raise TypeError("Your split value needs to be a float.")
+        else:
+        #check that split is 0.0 < x < 1.0
+            if not 0.0 < split < 1.0:
+                raise ValueError("Split value needs to be between 0.0 and 1.0")
+            else:
+                #split data in time format, not randomly shuffled
+                length_training = split * len(data)
+                length_training = int(round(length_training, 0))
+                training = data[0:length_training]
+                testing = data[length_training:len(data)]
+    return training, testing
+
+#function created by Emma Goldberg
+def clean_data(data, threshold,type_clean = 'value'):
+    if type_clean == 'value':
+        if isinstance(data, pd.Series) is False:
+            raise TypeError("Your data needs to be in a Series format.")
+        else:
+            #the data is in a Series, check that it is of type numeric
+            v = data.values
+            is_numeric = np.issubdtype(v.dtype, np.number)
+            if is_numeric is False:
+                raise TypeError("Your Series data needs to be numeric.")
+            else:
+            #the data is in the correct format, check that the threshold is an int
+                if isinstance(threshold, int) is False:
+                    raise TypeError("Your passed threshold needs to be an int.")
+                else:
+                    #actually clean the data
+                    cleaned_data = data[data.values > threshold]
+        return cleaned_data
+    else:
+        #check that the data is a series
+        if isinstance(data, pd.Series) is False:
+            raise TypeError("Your data needs to be in series format.")
+        else:
+        #check that their threshold is a float or int
+            if isinstance(threshold, int) is False and isinstance(threshold, float) is False:
+                raise TypeError("Threshold needs to be either a float or int.")
+            else:
+                #proceed
+                q1 = np.percentile(data,25)
+                q3 = np.percentile(data,75)
+                iqr = q3 - q1
+                lower_bound = q1 -(threshold * iqr)
+                upper_bound = q3 +(threshold * iqr) 
+                print("lower_bound: %f" %lower_bound,"and","upper_bound: %f" %upper_bound)
+                #clean the data
+                data = data[data.values > lower_bound]
+                cleaned_data = data[data.values < upper_bound]
+        return cleaned_data           
+
 def create_standard_multivariable_df(df, point_location = 0, shift = 1, rename_OAT = True, dropna = True):
     #this function creates a standard 50 variable DataFrame
     """
