@@ -381,9 +381,16 @@ def fill_nan_and_stale_values(df,col_to_fill = None, cols_for_fill = None , ffil
 def create_model(df, kwargs):
     #if user wants to train the model on the residuals instead of the original data
     if kwargs['train_on_residuals']:
-        cleaned = pd.concat(training, testing)
-        decomposed = decompose_data(cleaned, method = kwargs['method'])
-        training, testing = split_data(df[kwargs['point']], split = kwargs['training_percent'])
+        decomposed = decompose_data(df, method = kwargs['method'])
+        data = {}
+        #Create a dict with (each object in tuple is a pandas Series)
+        # Data: (training, testing), Trend:(training, testing), Seasonality:(training, testing), Noise: (training, testing)
+        for col in decomposed:
+            data[col] = split_data(decomposed[col], split = kwargs['training_percent'])
+        return data
+
+    else:
+        return "something"
 
 
 
