@@ -3,7 +3,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
 from matplotlib.pyplot import figure
-figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+from matplotlib.legend_handler import HandlerLine2D
+from statsmodels.tsa.seasonal import seasonal_decompose
+
+def plot_data(df, args):
+    figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+    linewidth = args['linewidth']
+    if isinstance(df, pd.DataFrame):
+        labels = df.columns.tolist()
+        for label in labels:
+            plt.plot(df.index, df[label].values, linewidth = linewidth, label = label)
+    else:
+        label = df.name
+        plt.plot(df.index, df.values, linewidth = linewidth, label = label)
+
+    if args['include_title']:
+        plt.title(args['title'])
+    if args['include_hline']:
+        count = 0
+        for hline_val in args['hline_values']:
+            label = args['hline_label'][count]
+            plt.axhline(y = hline_val, color = args['hline_color'], linewidth = linewidth, label = label)
+            count+=1
+        plt.legend(prop={'size': args['legend_size']})   
+    if args['include_vline']:
+        for vline_val in args['vline_value']:
+            plt.axvline(x = vline_val, color = args['vline_color'], linewidth = linewidth)
+        plt.legend(prop={'size': args['legend_size']})
+
 
 def print_report(df, show_plot = True, separate_plots = False):
     """
@@ -36,7 +63,9 @@ def print_report(df, show_plot = True, separate_plots = False):
                 print(f"{col}{'':{less_space}}|  {per} %{'':{11-7}}| {rows_nan}/{num_rows}")
     if show_plot:
         if not separate_plots:
-            df.plot(figsize = (20,10), linewidth = 1)
+            args = {'linewidth': 1, 'include_title': True, 'title': df.columns[0], 'include_hline': False, 'include_vline': False}
+            plot_data(df, args)
+            
         else:
             df.plot(subplots = True, figsize = (15,8), linewidth = 1)
 
@@ -58,6 +87,9 @@ def check_kwargs(kwargs):
         
     if not isinstance(kwargs['train_on_residuals'], bool):
         raise TypeError("'train_on_residuals' must be of type 'bool'")
+
+    if not (kwargs['method'] == "bfill" or kwargs['method'] == "ffill"):
+                raise TypeError("'method' must be either 'bfill' or 'ffill'")
         
     return "Good values!"
 
@@ -93,7 +125,7 @@ def split_data(data, split = 0.7):
     return training, testing
 
 #function created by Emma Goldberg
-def clean_data(data, threshold, type_clean = 'value', plot=True):
+def clean_data(data, threshold, clean_type = 'value', show_plot=True):
     """
     function: cleans the data using either a one-value threshold method or an iqr method
     params: 
@@ -103,7 +135,7 @@ def clean_data(data, threshold, type_clean = 'value', plot=True):
     returns:
             the cleaned data as a Series, and a plot of the data with the outlier threshold if specified.
     """
-    if type_clean == 'value':
+    if clean_type == 'value':
         if isinstance(data, pd.Series) is False:
             raise TypeError("Your data needs to be in a Series format.")
         else:
@@ -119,13 +151,12 @@ def clean_data(data, threshold, type_clean = 'value', plot=True):
                 else:
                     #actually clean the data
                     cleaned_data = data[data.values > threshold]
-        if plot is True:
-            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-            plt.plot(data.index, data.values, label = 'data', linewidth=1)
-            plt.axhline(y=threshold, color = 'red', linewidth=1)
-            plt.xticks(rotation=60)
-            plt.xlabel("Time")
-            plt.ylabel("Data")
+        if show_plot:
+            args = {'linewidth': 1, 'include_title': True, 'title': data.name, 
+                'include_hline': True, 'hline_values':[threshold] , 'hline_label':[str(threshold)],'hline_color':'red',
+                'include_vline': False,'legend_size': 18}
+            plot_data(data, args)
+
         return cleaned_data
     else:
         #check that the data is a series
@@ -144,17 +175,76 @@ def clean_data(data, threshold, type_clean = 'value', plot=True):
                 upper_bound = q3 +(threshold * iqr) 
                 print("lower_bound: %f" %lower_bound,"and","upper_bound: %f" %upper_bound)
                 #clean the data
-                cleaned_data = data[data.values > lower_bound]
-                cleaned_data = data[data.values < upper_bound]
-        if plot is True:
-            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-            plt.plot(data.index, data.values, linewidth=1)
-            plt.axhline(y=upper_bound, color = 'red', linewidth=1)
-            plt.axhline(y=lower_bound, color = 'red', linewidth=1)
-            plt.xticks(rotation=60)
-            plt.xlabel("Time")
-            plt.ylabel("Data")
-        return cleaned_data           
+                cleaned_data = data[(data.values > lower_bound) & (data.values < upper_bound) ]
+                
+        if show_plot:
+            up_label = "Upper: " + str(round(upper_bound,2))
+            low_label = "Lower: " + str(round(lower_bound,2))
+            args = {'linewidth': 1, 'include_title': True, 'title': data.name, 
+                'include_hline': True, 'hline_values':[upper_bound, lower_bound] , 'hline_label':[up_label, low_label],'hline_color':'red',
+                'include_vline': False,'legend_size': 18}
+            plot_data(data, args)
+
+        return cleaned_data     
+
+def split_and_clean(df, kwargs):
+    trng_per = kwargs['training_percent']
+    training, testing = np.split(df, [int(trng_per * len(df))])
+    training = training[kwargs['point']]
+    testing = testing[kwargs['point']]
+    if kwargs['clean_data']:
+        training = clean_data(training, threshold = kwargs['threshold'], clean_type = kwargs['clean_type'], show_plot = kwargs['show_cutoff_plot'])
+    combined = pd.concat([training, testing])
+    combined = combined.to_frame()
+    if kwargs['show_cleaned_plot']:
+        figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+        plt.plot(combined.index, combined.values, linewidth = 1)
+        plt.title(f"{combined.columns[0]}\n Training: {round(trng_per * 100, 2)}% - {len(training)} points\n Testing: {round((1-trng_per) * 100, 2)}% - {len(testing)} points")
+    return combined
+
+
+#by Emma Goldberg          
+def decompose_data(data, method = "bfill"):
+    #ensure that our data is in the proper format
+    if isinstance(data, pd.Series) is False:
+        raise TypeError("Your data needs to be in a Series format.")
+    else:
+        #check that their data has a datetime index
+        if type(data.index) is not pd.core.indexes.datetimes.DatetimeIndex:
+            raise TypeError("Series index needs to be in DateTime format.")
+        else:
+        #ensure data is in hourly format
+        #check that their method is one of bfill or ffill
+            if method is not "bfill" and method is not "ffill":
+                raise TypeError("Method needs to be of type either bfill or ffill.")
+            else:
+                #may need to add check that data.values are of type int
+                hourly = data.fillna(method = method)
+                hourly = hourly.asfreq(freq = 'H', method = method)
+                #decompose the data
+                result = seasonal_decompose(hourly)
+                trend = result.trend
+                #trend = result.trend.fillna(result.trend.mean())
+                seasonality = result.seasonal
+                #seasonality = seasonality.fillna(seasonality.mean())
+                resid = result.resid
+                #resid = resid.fillna(resid.mean())
+                decomposed_df = pd.DataFrame(dict(Data = hourly.values, Trend = trend.values, 
+                                                 Seasonality = seasonality.values, Noise = resid.values), index = hourly.index)
+
+    return decomposed_df
+
+def plot_decomposed_data(data, kwargs):
+    decomposed = decompose_data(data, method = kwargs['method'])
+    args = {'linewidth': 1, 'include_title': True, 'title': data.name, 
+                'include_hline': False,
+                'include_vline': False}
+    plot_data(decomposed, args)
+    def update(handle, orig):
+        handle.update_from(orig)
+        handle.set_linewidth(10)
+
+    plt.legend(prop={'size': 14},handler_map={plt.Line2D : HandlerLine2D(update_func=update)})
 
 def create_standard_multivariable_df(df, point_location = 0, shift = 1, rename_OAT = True, dropna = True):
     #this function creates a standard 50 variable DataFrame
@@ -277,3 +367,15 @@ def fill_nan_and_stale_values(df,col_to_fill = None, cols_for_fill = None , ffil
             return df.ffill()
         else:
             return df
+
+
+
+def create_model(df, kwargs):
+    #if user wants to train the model on the residuals instead of the original data
+    if kwargs['train_on_residuals']:
+        cleaned = pd.concat(training, testing)
+        decomposed = decompose_data(cleaned, method = kwargs['method'])
+        training, testing = split_data(df[kwargs['point']], split = kwargs['training_percent'])
+
+
+
