@@ -121,7 +121,7 @@ def clean_data(data, threshold, type_clean = 'value', plot=True):
                     cleaned_data = data[data.values > threshold]
         if plot is True:
             figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-            plt.plot(data.index, data.values, label = 'data')
+            plt.plot(data.index, data.values, label = 'data', linewidth=1)
             plt.axhline(y=threshold, color = 'red', linewidth=1)
             plt.xticks(rotation=60)
             plt.xlabel("Time")
@@ -130,15 +130,15 @@ def clean_data(data, threshold, type_clean = 'value', plot=True):
     else:
         #check that the data is a series
         if isinstance(data, pd.Series) is False:
-            raise TypeError("Your data needs to be in series format.")
+            raise TypeError("'data' must be a Pandas 'Series'")
         else:
         #check that their threshold is a float or int
             if isinstance(threshold, int) is False and isinstance(threshold, float) is False:
-                raise TypeError("Threshold needs to be either a float or int.")
+                raise TypeError("'threshold' needs to be of type 'float' or 'int'")
             else:
                 #proceed
-                q1 = np.percentile(data,25)
-                q3 = np.percentile(data,75)
+                q1 = data.quantile(.25)
+                q3 = data.quantile(.75)
                 iqr = q3 - q1
                 lower_bound = q1 -(threshold * iqr)
                 upper_bound = q3 +(threshold * iqr) 
@@ -148,7 +148,7 @@ def clean_data(data, threshold, type_clean = 'value', plot=True):
                 cleaned_data = data[data.values < upper_bound]
         if plot is True:
             figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-            plt.plot(data.index, data.values)
+            plt.plot(data.index, data.values, linewidth=1)
             plt.axhline(y=upper_bound, color = 'red', linewidth=1)
             plt.axhline(y=lower_bound, color = 'red', linewidth=1)
             plt.xticks(rotation=60)
