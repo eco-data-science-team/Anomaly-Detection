@@ -99,9 +99,17 @@ def clean_data(data, threshold,type_clean = 'value', plot=True):
          if plot is True:
             plt.plot(data.index, data.values, label = 'data')
             plt.axhline(y=threshold, color = 'red', linewidth=1)
+            plt.text('08-2019', threshold, "threshold")
             plt.xticks(rotation=60)
             plt.xlabel("Time")
             plt.ylabel("Data")
+        length_orig = len(data)
+        length_new = len(cleaned_data)
+        number_outliers = length_orig - length_new
+        percent_outliers = round(number_outliers/length_orig, 3)
+        mini_df = pd.DataFrame(dict(number_cleaned = number_outliers, percent_outliers = percent_outliers  )
+                              , index = [0])
+        display(mini_df)
         return cleaned_data
     else:
         #check that the data is a series
@@ -116,19 +124,29 @@ def clean_data(data, threshold,type_clean = 'value', plot=True):
                 q1 = np.percentile(data,25)
                 q3 = np.percentile(data,75)
                 iqr = q3 - q1
-                lower_bound = q1 -(threshold * iqr)
-                upper_bound = q3 +(threshold * iqr) 
-                print("lower_bound: %f" %lower_bound,"and","upper_bound: %f" %upper_bound)
+                lower_bound = int(round(q1 -(threshold * iqr), 0))
+                upper_bound = int(round(q3 +(threshold * iqr), 0))
+                print("lower_bound:", lower_bound,"and upper_bound:", upper_bound)
                 #clean the data
                 cleaned_data = data[data.values > lower_bound]
-                cleaned_data = data[data.values < upper_bound]
+                cleaned_data = cleaned_data[cleaned_data.values < upper_bound]
         if plot is True:
             plt.plot(data.index, data.values)
             plt.axhline(y=upper_bound, color = 'red', linewidth=1)
             plt.axhline(y=lower_bound, color = 'red', linewidth=1)
+            #end date value of data is coordinate x
+            plt.text('08-2019', upper_bound, "upper bound")
+            plt.text('08-2019', lower_bound, "lower bound")
             plt.xticks(rotation=60)
             plt.xlabel("Time")
             plt.ylabel("Data")
+        length_orig = len(data)
+        length_new = len(cleaned_data)
+        number_outliers = length_orig - length_new
+        percent_outliers = round(number_outliers/length_orig, 3)
+        mini_df = pd.DataFrame(dict(number_cleaned = number_outliers, percent_outliers = percent_outliers  )
+                              , index = [0])
+        display(mini_df)
         return cleaned_data           
 
 def create_standard_multivariable_df(df, point_location = 0, shift = 1, rename_OAT = True, dropna = True):
