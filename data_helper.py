@@ -152,7 +152,8 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True):
                     #actually clean the data
                     cleaned_data = data[data.values > threshold]
         if show_plot:
-            args = {'linewidth': 1, 'include_title': True, 'title': data.name, 
+            title = f"{data.name}\n Training Data"
+            args = {'linewidth': 1, 'include_title': True, 'title': title, 
                 'include_hline': True, 'hline_values':[threshold] , 'hline_label':[str(threshold)],'hline_color':'red',
                 'include_vline': False,'legend_size': 18}
             plot_data(data, args)
@@ -180,7 +181,8 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True):
         if show_plot:
             up_label = "Upper: " + str(round(upper_bound,2))
             low_label = "Lower: " + str(round(lower_bound,2))
-            args = {'linewidth': 1, 'include_title': True, 'title': data.name, 
+            title = f"{data.name}\n Training Data"
+            args = {'linewidth': 1, 'include_title': True, 'title': title, 
                 'include_hline': True, 'hline_values':[upper_bound, lower_bound] , 'hline_label':[up_label, low_label],'hline_color':'red',
                 'include_vline': False,'legend_size': 18}
             plot_data(data, args)
@@ -197,9 +199,14 @@ def split_and_clean(df, kwargs):
     combined = pd.concat([training, testing])
     combined = combined.to_frame()
     if kwargs['show_cleaned_plot']:
-        figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-        plt.plot(combined.index, combined.values, linewidth = 1)
-        plt.title(f"{combined.columns[0]}\n Training: {round(trng_per * 100, 2)}% - {len(training)} points\n Testing: {round((1-trng_per) * 100, 2)}% - {len(testing)} points")
+        title = f"{combined.columns[0]}\n Training: {round(trng_per * 100, 2)}% - {len(training)} points\n Testing: {round((1-trng_per) * 100, 2)}% - {len(testing)} points"
+        args = {'linewidth': 1, 'include_title': True, 'title': title, 
+                'include_hline': False, 
+                'include_vline': False}
+        plot_data(combined, args)
+        #figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+        #plt.plot(combined.index, combined.values, linewidth = 1)
+        #plt.title(f"{combined.columns[0]}\n Training: {round(trng_per * 100, 2)}% - {len(training)} points\n Testing: {round((1-trng_per) * 100, 2)}% - {len(testing)} points")
     return combined
 
 
@@ -236,7 +243,8 @@ def decompose_data(data, method = "bfill"):
 
 def plot_decomposed_data(data, kwargs):
     decomposed = decompose_data(data, method = kwargs['method'])
-    args = {'linewidth': 1, 'include_title': True, 'title': data.name, 
+    title = f"{data.name}\n Decomposed Values"
+    args = {'linewidth': 1, 'include_title': True, 'title': title, 
                 'include_hline': False,
                 'include_vline': False}
     plot_data(decomposed, args)
