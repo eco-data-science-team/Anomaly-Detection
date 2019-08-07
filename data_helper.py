@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use('fivethirtyeight')
 from matplotlib.pyplot import figure
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
+import math
 from matplotlib.legend_handler import HandlerLine2D
 from statsmodels.tsa.seasonal import seasonal_decompose
 
@@ -229,7 +232,7 @@ def decompose_data(data, method = "bfill"):
                 hourly = data.fillna(method = method)
                 hourly = hourly.asfreq(freq = 'H', method = method)
                 #decompose the data
-                result = seasonal_decompose(hourly)
+                result = seasonal_decompose(hourly, extrapolate_trend = 'freq')
                 trend = result.trend
                 #trend = result.trend.fillna(result.trend.mean())
                 seasonality = result.seasonal
@@ -362,13 +365,13 @@ def fill_nan_and_stale_values(df,col_to_fill = None, cols_for_fill = None , ffil
 
     if col_to_fill and isinstance(cols_for_fill, list):
         for col in cols_for_fill:
-            print(f"1. Using: {col}")
+            #print(f"1. Using: {col}")
             df[col_to_fill].fillna(df[col], inplace = True)
         
         df.loc[(df[col_to_fill].pct_change() == 0.0), col_to_fill] = np.nan
         
         for col in cols_for_fill:
-            print(f"2. Using: {col}")
+            #print(f"2. Using: {col}")
             df[col_to_fill].fillna(df[col], inplace = True)
         df.drop(cols_for_fill, axis = 1, inplace = True)
         if ffill:
@@ -378,19 +381,37 @@ def fill_nan_and_stale_values(df,col_to_fill = None, cols_for_fill = None , ffil
 
 
 
-def create_model(df, kwargs):
-    #if user wants to train the model on the residuals instead of the original data
-    if kwargs['train_on_residuals']:
-        decomposed = decompose_data(df, method = kwargs['method'])
-        data = {}
-        #Create a dict with (each object in tuple is a pandas Series)
-        # Data: (training, testing), Trend:(training, testing), Seasonality:(training, testing), Noise: (training, testing)
-        for col in decomposed:
-            data[col] = split_data(decomposed[col], split = kwargs['training_percent'])
-        return data
 
-    else:
-        return "something"
+def plot_model_training(train, val, epochs, neurons, show_every = 10):
+    plt.rcParams.update(plt.rcParamsDefault)
+    figure(num=None, figsize=(15, 6), dpi=80, facecolor='w', edgecolor='k')
+
+    vertical_lines = [x for x in range(epochs) if x % show_every == 0]
+
+    plt.plot(train, color='blue', label='train', linewidth = 1)
+    plt.plot(val, color='orange', label='validation', linewidth = 1)
+    plt.title(f'LSTM model Train vs Validation loss\n 2 Layers- {neurons} Neurons')
+    plt.ylabel('loss (mse)')
+    plt.xlabel('epoch')
+    plt.legend()
+
+    for xc in vertical_lines:
+        plt.axvline(x=xc, color = 'r', linestyle = '--')
+    for i,j in zip(train.index, train.values):
+        if i % show_every == 0:
+            plt.annotate(str(j), xy = (i,j ), xytext=(i+1, j+.000200),arrowprops=dict(arrowstyle="->",connectionstyle="arc3"))
+    for i,j in zip(val.index, val.values):
+        if i % show_every == 0:
+            plt.annotate(str(j), xy = (i,j ), xytext=(i+1, j+.0010),arrowprops=dict(arrowstyle="->",connectionstyle="arc3"))
+
+    plt.show()
 
 
-
+def save_model(model, arch_name, weight_name):
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open(arch_name, "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights(weight_name)
+    print("Saved model to disk")
