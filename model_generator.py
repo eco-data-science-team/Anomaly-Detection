@@ -336,3 +336,28 @@ def create_model(df1, kwargs):
         return df
         #df = append_variables(df)
             
+def find_anomalies(df, kwargs):
+    model = kwargs['model_type']
+
+    if model is not None:
+
+        df.eval('Anomalies = 0', inplace = True)
+        mask = (((df.Actual - df.Modeled)/df.Actual) > 0.1)
+        df.loc[mask, 'Anomalies'] = 1
+        idx = df.loc[mask].index
+        if kwargs['plot_anomalies']:
+            
+            plt.plot(df.index,df.Actual, color = 'blue', linewidth = 1, zorder = -1)
+            plt.scatter(idx,df.loc[mask, 'Actual'], color = 'red', linewidth = 2, zorder = 1)
+            
+            plt.show()
+            #df.Anomalies.plot(figsize = (20,10))
+        
+        return df
+    else:
+        point_name = kwargs['point']
+        
+        df[point_name].eval(f"Anomalies = {point_name} > df[{point_name}].mean()", inplace = True)
+
+        return df
+
