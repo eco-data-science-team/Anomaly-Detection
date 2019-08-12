@@ -6,6 +6,7 @@ from matplotlib.pyplot import figure
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 import math
+
 from matplotlib.legend_handler import HandlerLine2D
 from statsmodels.tsa.seasonal import seasonal_decompose
 
@@ -89,7 +90,7 @@ def check_kwargs(kwargs):
     if not (isinstance(kwargs['threshold'], int) or isinstance(kwargs['threshold'], float) or (isinstance(kwargs['threshold'], list) and len(kwargs['threshold']) == 2)) :
         raise TypeError("'threshold' must be of type 'int' or 'float', or 'list' of two values")
         
-    if not (kwargs['model_type'] == 'LSTM' or kwargs['model_type'] == 'Random Forest'):
+    if not (kwargs['model_type'] == 'LSTM' or kwargs['model_type'] == 'Random Forest' or kwargs['model_type'] == None):
         raise ValueError("'model_type' must be either 'LSTM' or 'Random Forest'")
         
     if not isinstance(kwargs['train_on_residuals'], bool):
