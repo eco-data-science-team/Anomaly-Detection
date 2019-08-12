@@ -10,6 +10,7 @@ from matplotlib.legend_handler import HandlerLine2D
 from statsmodels.tsa.seasonal import seasonal_decompose
 
 def plot_data(df, args):
+    plt.style.use('fivethirtyeight')
     figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
     linewidth = args['linewidth']
     if isinstance(df, pd.DataFrame):
@@ -81,9 +82,12 @@ def check_kwargs(kwargs):
         
     if not (kwargs['clean_type'] == 'value' or kwargs['clean_type'] == 'iqr'):
         raise ValueError("'clean_type' must be either 'value' or 'iqr'")
-        
-    if not (isinstance(kwargs['threshold'], int) or isinstance(kwargs['threshold'], float)):
-        raise TypeError("'threshold' must be of type 'int' or 'float'")
+    
+    if kwargs['clean_type'] == 'value' and (isinstance(kwargs['threshold'], list) and (kwargs['threshold'][0] > kwargs['threshold'][1])) :
+        raise ValueError("First item in threshold must be less that the second value ")
+
+    if not (isinstance(kwargs['threshold'], int) or isinstance(kwargs['threshold'], float) or (isinstance(kwargs['threshold'], list) and len(kwargs['threshold']) == 2)) :
+        raise TypeError("'threshold' must be of type 'int' or 'float', or 'list' of two values")
         
     if not (kwargs['model_type'] == 'LSTM' or kwargs['model_type'] == 'Random Forest'):
         raise ValueError("'model_type' must be either 'LSTM' or 'Random Forest'")
@@ -121,10 +125,11 @@ def split_data(data, split = 0.7):
                 raise ValueError("Split value needs to be between 0.0 and 1.0")
             else:
                 #split data in time format, not randomly shuffled
-                length_training = split * len(data)
-                length_training = int(round(length_training, 0))
-                training = data[0:length_training]
-                testing = data[length_training:len(data)]
+                # length_training = split * len(data)
+                # length_training = int(round(length_training, 0))
+                # training = data[0:length_training]
+                # testing = data[length_training:len(data)]
+                training, testing = np.split(data, [int(split * len(data))])
     return training, testing
 
 #function created by Emma Goldberg
@@ -149,15 +154,22 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True):
                 raise TypeError("Your Series data needs to be numeric.")
             else:
             #the data is in the correct format, check that the threshold is an int
-                if isinstance(threshold, int) is False:
-                    raise TypeError("Your passed threshold needs to be an int.")
-                else:
+                if isinstance(threshold, int) :
                     #actually clean the data
                     cleaned_data = data[data.values > threshold]
+                elif isinstance(threshold, list):
+                    mask = (data.values > threshold[0]) & (data.values < threshold[1])
+                    cleaned_data = data[mask]
         if show_plot:
             title = f"{data.name}\n Training Data"
+            if isinstance(threshold, list):
+                hline_label = [str(threshold[0]), str(threshold[1])]
+                hline_values = threshold
+            else:
+                hline_label = [str(threshold)]
+                hline_values = [threshold]
             args = {'linewidth': 1, 'include_title': True, 'title': title, 
-                'include_hline': True, 'hline_values':[threshold] , 'hline_label':[str(threshold)],'hline_color':'red',
+                'include_hline': True, 'hline_values':hline_values , 'hline_label':hline_label,'hline_color':'red',
                 'include_vline': False,'legend_size': 18}
             plot_data(data, args)
 
@@ -199,6 +211,7 @@ def split_and_clean(df, kwargs):
     testing = testing[kwargs['point']]
     if kwargs['clean_data']:
         training = clean_data(training, threshold = kwargs['threshold'], clean_type = kwargs['clean_type'], show_plot = kwargs['show_cutoff_plot'])
+    
     combined = pd.concat([training, testing])
     combined = combined.to_frame()
     if kwargs['show_cleaned_plot']:
