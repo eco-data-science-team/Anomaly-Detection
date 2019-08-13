@@ -5,16 +5,18 @@ plt.style.use('fivethirtyeight')
 from matplotlib.pyplot import figure
 from matplotlib.legend_handler import HandlerLine2D
 from statsmodels.tsa.seasonal import seasonal_decompose
-from data_helper import *
+
+
 
 import sys
+
+from .data_helper import *
 import keras
 from keras.optimizers import *
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.callbacks import EarlyStopping
-
 import tensorflow as tf
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 from sklearn.preprocessing import MinMaxScaler
@@ -32,9 +34,12 @@ from sklearn.metrics import mean_squared_error
 import math
 from IPython.display import display, HTML
 import configparser
+import os
+cwd = os.getcwd()
+config_path = cwd + '/src/config/mylstmconfig.ini'
 config = configparser.ConfigParser()
-config.read('config/mylstmconfig.ini')
-from data_helper import *
+something = config.read(config_path)
+
 scaler = MinMaxScaler(feature_range=(0,1))
 eco_tools_path = config['SETUP']['eco_tools_path']
 sys.path.append(eco_tools_path)
@@ -340,10 +345,11 @@ def find_anomalies(df, kwargs):
     model = kwargs['model_type']
 
     if model is not None:
-
+        #df = your_method(df,method = 'iqr'/'std')
         df.eval('Anomalies = 0', inplace = True)
         mask = (((df.Actual - df.Modeled)/df.Actual) > 0.1)
         df.loc[mask, 'Anomalies'] = 1
+        #idx = df.loc[df.Anomalies == 1].index
         idx = df.loc[mask].index
         if kwargs['show_anomalies_plot']:
             figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
