@@ -83,7 +83,10 @@ def check_kwargs(kwargs):
         
     if not (kwargs['clean_type'] == 'value' or kwargs['clean_type'] == 'iqr'):
         raise ValueError("'clean_type' must be either 'value' or 'iqr'")
-    
+
+    if kwargs['clean_type'] == 'iqr' and not (isinstance(kwargs['threshold'], int) or isinstance(kwargs['threshold'], float)):
+        raise ValueError("'threshold' must be of type 'int' or 'float'")
+
     if kwargs['clean_type'] == 'value' and (isinstance(kwargs['threshold'], list) and (kwargs['threshold'][0] > kwargs['threshold'][1])) :
         raise ValueError("First item in threshold must be less that the second value ")
 
@@ -91,13 +94,28 @@ def check_kwargs(kwargs):
         raise TypeError("'threshold' must be of type 'int' or 'float', or 'list' of two values")
         
     if not (kwargs['model_type'] == 'LSTM' or kwargs['model_type'] == 'Random Forest' or kwargs['model_type'] == None):
-        raise ValueError("'model_type' must be either 'LSTM' or 'Random Forest'")
+        raise ValueError("'model_type' must be either 'LSTM', 'Random Forest' or None")
         
     if not isinstance(kwargs['train_on_residuals'], bool):
         raise TypeError("'train_on_residuals' must be of type 'bool'")
 
     if not (kwargs['method'] == "bfill" or kwargs['method'] == "ffill"):
-                raise TypeError("'method' must be either 'bfill' or 'ffill'")
+        raise TypeError("'method' must be either 'bfill' or 'ffill'")
+    
+    if not isinstance(kwargs['show_cutoff_plot'], bool):
+        raise TypeError("'show_cutoff_plot' must be of type 'bool'")
+
+    if not isinstance(kwargs['show_training_plot'], bool):
+        raise TypeError("'show_training_plot' must be of type 'bool'")
+    
+    if not isinstance(kwargs['show_results_plots'], bool):
+        raise TypeError("'show_results_plot' must be of type 'bool'")
+
+    if not isinstance(kwargs['show_anomalies_plot'], bool):
+        raise TypeError("'show_anomalies_plot' must be of type 'bool'")
+
+    if not isinstance(kwargs['show_removed_anomalies_plot'], bool):
+        raise TypeError("'show_removed_anomalies_plot' must be of type 'bool'")
         
     return "Good values!"
 

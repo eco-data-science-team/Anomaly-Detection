@@ -345,11 +345,17 @@ def find_anomalies(df, kwargs):
         mask = (((df.Actual - df.Modeled)/df.Actual) > 0.1)
         df.loc[mask, 'Anomalies'] = 1
         idx = df.loc[mask].index
-        if kwargs['plot_anomalies']:
-            
-            plt.plot(df.index,df.Actual, color = 'blue', linewidth = 1, zorder = -1)
-            plt.scatter(idx,df.loc[mask, 'Actual'], color = 'red', linewidth = 2, zorder = 1)
-            
+        if kwargs['show_anomalies_plot']:
+            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+            plt.plot(df.index,df.Actual, color = 'blue', linewidth = 1, zorder = 0)
+            #Area of star = W x H so if we want to make it 3 times bigger we would do (3W) x (3H) = 9 x WH and so on
+            s = [20 * 16 for n in range(len(idx))]
+            num_anomalies = len(idx)
+            plt.scatter(idx,df.loc[mask, 'Actual'], label = "Anomalies", color = 'red', marker = '*', linewidth = 2, zorder = 1, s = s, edgecolors = 'white')
+            plt.title(f"{num_anomalies} anomalies detected\n Using ____ Method")
+            plt.suptitle(f"{kwargs['point']}", fontsize = 18)
+            plt.ylabel(kwargs['point'])
+            plt.legend()
             plt.show()
             #df.Anomalies.plot(figsize = (20,10))
         
@@ -361,3 +367,20 @@ def find_anomalies(df, kwargs):
 
         return df
 
+def drop_anomalies(df, kwargs):
+    point_name = kwargs['point']
+    initial__shape = df.shape[0]
+    num_anomalies = df.loc[df.Anomalies == 1].shape[0]
+    new_shape = initial__shape - num_anomalies
+    print(f"Number of Points (pre clean): {initial__shape}")
+    print(f"Removing {num_anomalies} anomalies...")
+    print(f"Number of Points (post clean): {new_shape}" )
+    df = df.loc[~(df.Anomalies == 1)]
+    if kwargs['show_removed_anomalies_plot']:
+        figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+        plt.plot(df.index, df.Actual, color = 'blue', linewidth = 1, label= point_name)
+        plt.title(f"{point_name}")
+        plt.ylabel(f"{point_name}")
+        plt.show()
+    
+    return df
