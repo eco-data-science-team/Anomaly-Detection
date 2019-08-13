@@ -347,6 +347,9 @@ def find_anomalies(df, kwargs):
     if model is not None:
         #df = your_method(df,method = 'iqr'/'std')
         df.eval('Anomalies = 0', inplace = True)
+        upper
+        lower 
+        mask = (df.Actual < lower_bound) |  (df.Actual > upper_bound)
         mask = (((df.Actual - df.Modeled)/df.Actual) > 0.1)
         df.loc[mask, 'Anomalies'] = 1
         #idx = df.loc[df.Anomalies == 1].index
