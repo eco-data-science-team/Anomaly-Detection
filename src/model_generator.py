@@ -341,27 +341,22 @@ def create_model(df1, kwargs):
         return df
         #df = append_variables(df)
             
-def find_anomalies(df, kwargs):
+def find_anomalies(df,args, kwargs):
     model = kwargs['model_type']
 
     if model is not None:
-        #df = your_method(df,method = 'iqr'/'std')
-        df.eval('Anomalies = 0', inplace = True)
-        upper
-        lower 
-        mask = (df.Actual < lower_bound) |  (df.Actual > upper_bound)
-        mask = (((df.Actual - df.Modeled)/df.Actual) > 0.1)
-        df.loc[mask, 'Anomalies'] = 1
-        #idx = df.loc[df.Anomalies == 1].index
-        idx = df.loc[mask].index
+        df = tag_anomalies(df, args['anomalies_method'])
+        idx = df.loc[df.Anomalies == 1].index
+        method_type = list(args['anomalies_method'].keys())[0]
+        threshold = args['anomalies_method'][method_type]
         if kwargs['show_anomalies_plot']:
             figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
             plt.plot(df.index,df.Actual, color = 'blue', linewidth = 1, zorder = 0)
             #Area of star = W x H so if we want to make it 3 times bigger we would do (3W) x (3H) = 9 x WH and so on
             s = [20 * 16 for n in range(len(idx))]
             num_anomalies = len(idx)
-            plt.scatter(idx,df.loc[mask, 'Actual'], label = "Anomalies", color = 'red', marker = '*', linewidth = 2, zorder = 1, s = s, edgecolors = 'white')
-            plt.title(f"{num_anomalies} anomalies detected\n Using ____ Method")
+            plt.scatter(idx,df.loc[df.Anomalies == 1, 'Actual'], label = "Anomalies", color = 'red', marker = '*', linewidth = 2, zorder = 1, s = s, edgecolors = 'white')
+            plt.title(f"{num_anomalies} Anomalies Detected\n Using {method_type} Method with {threshold} threshold")
             plt.suptitle(f"{kwargs['point']}", fontsize = 18)
             plt.ylabel(kwargs['point'])
             plt.legend()
@@ -393,3 +388,30 @@ def drop_anomalies(df, kwargs):
         plt.show()
     
     return df
+
+def tag_anomalies(df, method = {'iqr' : 3.0}):
+    #check that method is correct
+    method_type = list(method.keys())[0]
+    if  not (method_type == 'iqr' or method_type == 'sd'):
+        raise ValueError("Method needs to be one of iqr or sd.")
+    else:
+        #get residuals
+        df.eval('Anomalies = 0', inplace=True)
+        df.eval('Result = Actual - Modeled', inplace=True)
+        if method_type == 'iqr':
+            twenty_fifth = np.percentile(df.Result, 25)
+            seventy_fifth = np.percentile(df.Result, 75)
+            iqr = seventy_fifth - twenty_fifth
+            upper_bound = seventy_fifth + (method[method_type] * iqr)
+            lower_bound = twenty_fifth - (method[method_type] * iqr)
+            mask = (df.Result > upper_bound) | (df.Result < lower_bound)
+            df.loc[mask, 'Anomalies'] = 1
+        else:
+            #method=SD
+            upper_sd = np.mean(df.Result) + int(method[method_type]) * np.std(df.Result)
+            lower_sd = np.mean(df.Result) - int(method[method_type]) * np.std(df.Result)
+            mask = (df.Result > upper_sd) | (df.Result < lower_sd)
+            df.loc[mask, 'Anomalies'] = 1
+            
+    return df
+    
