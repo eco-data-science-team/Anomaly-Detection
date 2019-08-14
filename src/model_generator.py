@@ -140,7 +140,7 @@ def create_model(df1, kwargs):
             train = DataFrame()
             val = DataFrame()
             np.random.seed(42)
-            epochs = 4
+            
             for i in range(n_jobs):
                 model = Sequential()
                 model.add(LSTM(neurons, input_shape=(X_train.shape[1], X_train.shape[2]), return_sequences = True))
