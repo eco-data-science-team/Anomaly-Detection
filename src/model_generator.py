@@ -186,42 +186,49 @@ def create_model(df1, kwargs):
 
 
 
-
+            
             test_r2 = round(test_r2, 3)
             test_rmse = round(test_rmse, 3)
             test_mae = round(test_mae, 3) 
+            if kwargs['show_results_plots']:
+                plt.style.use('fivethirtyeight')
+                figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
 
-            plt.style.use('fivethirtyeight')
-            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+                ax = plt.subplot()
+            
 
-            ax = plt.subplot()
-        
+                ax.plot(train_df.Actual, label = 'Training', linewidth = 1, color = 'green')
+                ax.plot(test_df.Actual, label = 'Test', linewidth = 1, color = 'black')
+                plt.legend(prop={'size': 14})
+                plt.title('Training and Testing Data', fontsize = 14)
+                plt.show()
 
-            ax.plot(train_df.Actual, label = 'Training', linewidth = 1, color = 'green')
-            ax.plot(test_df.Actual, label = 'Test', linewidth = 1, color = 'black')
-            plt.legend(prop={'size': 14})
-            plt.title('Training and Testing Data', fontsize = 14)
-            plt.show()
+                train_title = f"Training: Actual vs. Modeled \n R2: {train_r2}  RMSE: {train_rmse} MAE: {train_mae}"
+                args = {'linewidth': 1, 'include_title': False, 'title': train_title, 
+                    'include_hline': False,
+                    'include_vline': False,}
+                plot_data(train_df, args)
+                plt.title(train_title, fontsize = 16)
+                plt.ylabel(point_name)
+                plt.legend(prop={'size': 14})
+                plt.show()
 
-            train_title = f"Training: Actual vs. Modeled \n R2: {train_r2}  RMSE: {train_rmse} MAE: {train_mae}"
-            args = {'linewidth': 1, 'include_title': False, 'title': train_title, 
-                'include_hline': False,
-                'include_vline': False,}
-            plot_data(train_df, args)
-            plt.title(train_title, fontsize = 16)
-            plt.ylabel(point_name)
-            plt.legend(prop={'size': 14})
-            plt.show()
-
-            test_title = f"Test: Actual vs. Modeled \n R2: {test_r2}  RMSE: {test_rmse} MAE: {test_mae}"
-            args = {'linewidth': 1, 'include_title': False, 'title': test_title, 
-                'include_hline': False,
-                'include_vline': False,}
-            plot_data(test_df, args)
-            plt.title(test_title, fontsize = 16)  
-            plt.ylabel(point_name)
-            plt.legend(prop={'size': 14})
-            plt.show()
+                test_title = f"Test: Actual vs. Modeled \n R2: {test_r2}  RMSE: {test_rmse} MAE: {test_mae}"
+                args = {'linewidth': 1, 'include_title': False, 'title': test_title, 
+                    'include_hline': False,
+                    'include_vline': False,}
+                plot_data(test_df, args)
+                plt.title(test_title, fontsize = 16)  
+                plt.ylabel(point_name)
+                plt.legend(prop={'size': 14})
+                plt.show()
+            else:
+                print(f"  Training R2: {train_r2}")
+                print(f"   Testing R2: {test_r2} \n")
+                print(f"Training RMSE: {train_rmse}")
+                print(f" Testing RMSE: {test_rmse} \n")
+                print(f" Training MAE: {train_mae}")
+                print(f"  Testing MAE: {test_mae} \n")
         else:
             n_estimators = int(config['model']['n_estimators'])
             training_percent =float(kwargs['training_percent']) 
@@ -233,17 +240,12 @@ def create_model(df1, kwargs):
             X_test = X_test.astype(np.float32)
             y_train = y_train.astype(np.float32)
             y_test = y_test.astype(np.float32)
-            print(f"X_train original shape: {X_train.shape}")
-            #display(X_train[~X_train.isin([np.nan, np.inf, -np.inf]).any(1)].shape)
-            #print(f"Xtrain bad val shape: {X_train[~X_train.isin([np.nan, np.inf, -np.inf]).any(1)].shape}")
             X_train.fillna(method = 'ffill', inplace = True)
             X_train.fillna(method ='bfill', inplace = True)
             y_train.fillna(method = 'ffill', inplace = True)
             y_train.fillna(method ='bfill', inplace = True)
-            print(f"X_train droppped shape: {X_train.dropna(how = 'any').shape}")
-            print(f"ytrain original shape: {y_train.shape}")
-            print(f"y_train dropped shape: {y_train.dropna(how = 'any').shape}")
-            #print(f"y_train bad values shape: {y_train[y_train.isin([np.nan, np.inf, -np.inf]).any()].shape}")
+            
+            
             model = rforest.fit(X_train.fillna(method='ffill'), y_train.fillna(method='ffill'))
             
             if train_on_residuals:
@@ -273,41 +275,50 @@ def create_model(df1, kwargs):
                 test_df, test_r2, test_rmse, test_mae = generate_actual_vs_model_df(model, 
                         X_test, y_test, scaler = None, 
                         trend = None, seasonal = None, index = test_idx, train_on_residuals = False, use_scaler = False)
+            
+                        
             test_r2 = round(test_r2, 3)
             test_rmse = round(test_rmse, 3)
             test_mae = round(test_mae, 3)
+            if kwargs['show_results_plots']:    
+                plt.style.use('fivethirtyeight')
+                figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
 
-            plt.style.use('fivethirtyeight')
-            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+                ax = plt.subplot()
+            
 
-            ax = plt.subplot()
-        
+                ax.plot(train_df.Actual, label = 'Training', linewidth = 1, color = 'green')
+                ax.plot(test_df.Actual, label = 'Test', linewidth = 1, color = 'black')
+                plt.legend(prop={'size': 14})
+                plt.title('Training and Testing Data', fontsize = 14)
+                plt.show()
 
-            ax.plot(train_df.Actual, label = 'Training', linewidth = 1, color = 'green')
-            ax.plot(test_df.Actual, label = 'Test', linewidth = 1, color = 'black')
-            plt.legend(prop={'size': 14})
-            plt.title('Training and Testing Data', fontsize = 14)
-            plt.show()
+                train_title = f"Training: Actual vs. Modeled \n R2: {train_r2}  RMSE: {train_rmse} MAE: {train_mae}"
+                args = {'linewidth': 1, 'include_title': False, 'title': train_title, 
+                    'include_hline': False,
+                    'include_vline': False,}
+                plot_data(train_df, args)
+                plt.title(train_title, fontsize = 16)
+                plt.ylabel(point_name)
+                plt.legend(prop={'size': 14})
+                plt.show()
 
-            train_title = f"Training: Actual vs. Modeled \n R2: {train_r2}  RMSE: {train_rmse} MAE: {train_mae}"
-            args = {'linewidth': 1, 'include_title': False, 'title': train_title, 
-                'include_hline': False,
-                'include_vline': False,}
-            plot_data(train_df, args)
-            plt.title(train_title, fontsize = 16)
-            plt.ylabel(point_name)
-            plt.legend(prop={'size': 14})
-            plt.show()
-
-            test_title = f"Test: Actual vs. Modeled \n R2: {test_r2}  RMSE: {test_rmse} MAE: {test_mae}"
-            args = {'linewidth': 1, 'include_title': False, 'title': test_title, 
-                'include_hline': False,
-                'include_vline': False,}
-            plot_data(test_df, args)
-            plt.title(test_title, fontsize = 16)  
-            plt.ylabel(point_name)
-            plt.legend(prop={'size': 14})
-            plt.show()
+                test_title = f"Test: Actual vs. Modeled \n R2: {test_r2}  RMSE: {test_rmse} MAE: {test_mae}"
+                args = {'linewidth': 1, 'include_title': False, 'title': test_title, 
+                    'include_hline': False,
+                    'include_vline': False,}
+                plot_data(test_df, args)
+                plt.title(test_title, fontsize = 16)  
+                plt.ylabel(point_name)
+                plt.legend(prop={'size': 14})
+                plt.show()
+            else:
+                print(f"  Training R2: {train_r2}")
+                print(f"   Testing R2: {test_r2} \n")
+                print(f"Training RMSE: {train_rmse}")
+                print(f" Testing RMSE: {test_rmse} \n")
+                print(f" Training MAE: {train_mae}")
+                print(f"  Testing MAE: {test_mae} \n")
 
         return  train_df, test_df       
     #return model,X_train, X_test, y_train, y_test, scaler , train_idx, test_idx, data
@@ -343,7 +354,8 @@ def create_model(df1, kwargs):
             
 def find_anomalies(df,args, kwargs):
     model = kwargs['model_type']
-
+    plt.style.use('fivethirtyeight')
+    figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
     if model is not None:
         df = tag_anomalies(df, args['anomalies_method'])
         idx = df.loc[df.Anomalies == 1].index
@@ -372,6 +384,7 @@ def find_anomalies(df,args, kwargs):
         return df
 
 def drop_anomalies(df, kwargs):
+    plt.style.use('fivethirtyeight')
     point_name = kwargs['point']
     initial__shape = df.shape[0]
     num_anomalies = df.loc[df.Anomalies == 1].shape[0]
@@ -382,6 +395,7 @@ def drop_anomalies(df, kwargs):
     df = df.loc[~(df.Anomalies == 1)]
     if kwargs['show_removed_anomalies_plot']:
         figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+        
         plt.plot(df.index, df.Actual, color = 'blue', linewidth = 1, label= point_name)
         plt.title(f"{point_name}")
         plt.ylabel(f"{point_name}")
