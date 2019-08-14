@@ -36,7 +36,7 @@ from IPython.display import display, HTML
 import configparser
 import os
 cwd = os.getcwd()
-config_path = cwd + '/src/config/mylstmconfig.ini'
+config_path = cwd + '/src/config/lstmconfig.ini'
 config = configparser.ConfigParser()
 something = config.read(config_path)
 
