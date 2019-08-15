@@ -24,7 +24,7 @@ warnings.filterwarnings('ignore')
 #General imports created in-house used across all script
 from .data_helper import *
 cwd = os.getcwd()
-config_path = cwd + '/src/config/mylstmconfig.ini'
+config_path = cwd + '/src/config/lstmconfig.ini'
 config = configparser.ConfigParser()
 something = config.read(config_path)
 eco_tools_path = config['SETUP']['eco_tools_path']
