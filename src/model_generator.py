@@ -1,50 +1,53 @@
+#General Imports used across both Models
+import sys
+import os
+import math
+import warnings
+#import keras
+import matplotlib
+import configparser
 import pandas as pd
 import numpy as np
+from keras.optimizers import *
+import tensorflow as tf
 import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
 from matplotlib.pyplot import figure
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
 from matplotlib.legend_handler import HandlerLine2D
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-
-
-import sys
-
-from .data_helper import *
-import keras
-from keras.optimizers import *
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.callbacks import EarlyStopping
-import tensorflow as tf
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-from sklearn.preprocessing import MinMaxScaler
-import warnings
+#tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+plt.style.use('fivethirtyeight')
 warnings.filterwarnings('ignore')
-from matplotlib import pyplot as plt
-from numpy import array
-from pandas import DataFrame
-import pandas as pd
-import numpy as np
-import matplotlib
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score
-from sklearn.metrics import mean_squared_error
-import math
-from IPython.display import display, HTML
-import configparser
-import os
+
+#General imports created in-house used across all script
+from .data_helper import *
 cwd = os.getcwd()
-config_path = cwd + '/src/config/lstmconfig.ini'
+config_path = cwd + '/src/config/mylstmconfig.ini'
 config = configparser.ConfigParser()
 something = config.read(config_path)
-
-scaler = MinMaxScaler(feature_range=(0,1))
 eco_tools_path = config['SETUP']['eco_tools_path']
 sys.path.append(eco_tools_path)
 from ecotools.pi_client import pi_client
 pc = pi_client(root = 'readonly')
+
+# LSTM Specific Imports
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+#from keras.callbacks import EarlyStopping
+#from keras.callbacks import ModelCheckpoint
+from sklearn.preprocessing import MinMaxScaler
+#es = EarlyStopping(monitor='val_loss', patience = 50, mode = 'min', verbose=1)
+#mc = ModelCheckpoint('best_model.h5', monitor = 'val_loss', mode = 'min', verbose = 1, save_best_only = True)
+#callbacks_list = [es, mc]
+
+# Random Forest Imports
+from sklearn.ensemble import RandomForestRegressor
+
+#scaler = MinMaxScaler(feature_range=(0,1))
+
 
 def append_variables(df):
     look_back = int(config['model']['look_back'])
@@ -137,8 +140,8 @@ def create_model(df1, kwargs):
             X_train = np.nan_to_num(X_train)
             X_test = np.reshape(X_test, (X_test.shape[0], 1, X_test.shape[1]))
 
-            train = DataFrame()
-            val = DataFrame()
+            train = pd.DataFrame()
+            val = pd.DataFrame()
             np.random.seed(42)
             
             for i in range(n_jobs):
@@ -150,7 +153,7 @@ def create_model(df1, kwargs):
 
                 # fit model
                 history = model.fit(X_train, y_train, epochs = epochs, validation_split = validation_split, shuffle = False)
-                # story history
+                # store history
                 train[str(i)] = history.history['loss']
                 val[str(i)] = history.history['val_loss']
             if kwargs['show_training_plot']:
@@ -356,32 +359,30 @@ def find_anomalies(df,args, kwargs):
     model = kwargs['model_type']
     plt.style.use('fivethirtyeight')
     figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-    if model is not None:
-        df = tag_anomalies(df, args['anomalies_method'])
-        idx = df.loc[df.Anomalies == 1].index
-        method_type = list(args['anomalies_method'].keys())[0]
-        threshold = args['anomalies_method'][method_type]
-        if kwargs['show_anomalies_plot']:
-            figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-            plt.plot(df.index,df.Actual, color = 'blue', linewidth = 1, zorder = 0)
-            #Area of star = W x H so if we want to make it 3 times bigger we would do (3W) x (3H) = 9 x WH and so on
-            s = [20 * 16 for n in range(len(idx))]
-            num_anomalies = len(idx)
-            plt.scatter(idx,df.loc[df.Anomalies == 1, 'Actual'], label = "Anomalies", color = 'red', marker = '*', linewidth = 2, zorder = 1, s = s, edgecolors = 'white')
-            plt.title(f"{num_anomalies} Anomalies Detected\n Using {method_type} Method with {threshold} threshold")
-            plt.suptitle(f"{kwargs['point']}", fontsize = 18)
-            plt.ylabel(kwargs['point'])
-            plt.legend()
-            plt.show()
+    #if model is not None:
+    df = tag_anomalies(df,kwargs = kwargs, method = args['anomalies_method'])
+    idx = df.loc[df.Anomalies == 1].index
+    method_type = list(args['anomalies_method'].keys())[0]
+    threshold = args['anomalies_method'][method_type]
+    if kwargs['show_anomalies_plot']:
+        figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+        plt.plot(df.index,df.Actual, color = 'blue', linewidth = 1, zorder = 0)
+        #Area of star = W x H so if we want to make it 3 times bigger we would do (3W) x (3H) = 9 x WH and so on
+        s = [20 * 16 for n in range(len(idx))]
+        num_anomalies = len(idx)
+        plt.scatter(idx,df.loc[df.Anomalies == 1, 'Actual'], label = "Anomalies", color = 'red', marker = '*', linewidth = 2, zorder = 1, s = s, edgecolors = 'white')
+        plt.title(f"{num_anomalies} Anomalies Detected\n Using {method_type} Method with {threshold} threshold")
+        plt.suptitle(f"{kwargs['point']}", fontsize = 18)
+        plt.ylabel(kwargs['point'])
+        plt.legend()
+        plt.show()
             #df.Anomalies.plot(figsize = (20,10))
         
-        return df
-    else:
-        point_name = kwargs['point']
-        
-        df[point_name].eval(f"Anomalies = {point_name} > df[{point_name}].mean()", inplace = True)
+        #return df
+    #else:
+        #df = tag_anomalies(df, method = args['anomalies_method'], kwargs = kwargs)
 
-        return df
+    return df
 
 def drop_anomalies(df, kwargs):
     plt.style.use('fivethirtyeight')
@@ -403,29 +404,74 @@ def drop_anomalies(df, kwargs):
     
     return df
 
-def tag_anomalies(df, method = {'iqr' : 3.0}):
+def tag_anomalies(df, kwargs, method = {'iqr' : 3.0}):
     #check that method is correct
     method_type = list(method.keys())[0]
     if  not (method_type == 'iqr' or method_type == 'sd'):
         raise ValueError("Method needs to be one of iqr or sd.")
     else:
-        #get residuals
-        df.eval('Anomalies = 0', inplace=True)
-        df.eval('Result = Actual - Modeled', inplace=True)
-        if method_type == 'iqr':
-            twenty_fifth = np.percentile(df.Result, 25)
-            seventy_fifth = np.percentile(df.Result, 75)
-            iqr = seventy_fifth - twenty_fifth
-            upper_bound = seventy_fifth + (method[method_type] * iqr)
-            lower_bound = twenty_fifth - (method[method_type] * iqr)
-            mask = (df.Result > upper_bound) | (df.Result < lower_bound)
-            df.loc[mask, 'Anomalies'] = 1
+        model = kwargs['model_type']
+        if model is not None:
+            #get residuals
+            df.eval('Anomalies = 0', inplace=True)
+            df.eval('Result = Actual - Modeled', inplace=True)
+            if method_type == 'iqr':
+                twenty_fifth = np.percentile(df.Result, 25)
+                seventy_fifth = np.percentile(df.Result, 75)
+                iqr = seventy_fifth - twenty_fifth
+                upper_bound = seventy_fifth + (method[method_type] * iqr)
+                lower_bound = twenty_fifth - (method[method_type] * iqr)
+                mask = (df.Result > upper_bound) | (df.Result < lower_bound)
+                df.loc[mask, 'Anomalies'] = 1
+            else:
+                #method=SD
+                upper_sd = np.mean(df.Result) + int(method[method_type]) * np.std(df.Result)
+                lower_sd = np.mean(df.Result) - int(method[method_type]) * np.std(df.Result)
+                mask = (df.Result > upper_sd) | (df.Result < lower_sd)
+                df.loc[mask, 'Anomalies'] = 1
         else:
-            #method=SD
-            upper_sd = np.mean(df.Result) + int(method[method_type]) * np.std(df.Result)
-            lower_sd = np.mean(df.Result) - int(method[method_type]) * np.std(df.Result)
-            mask = (df.Result > upper_sd) | (df.Result < lower_sd)
-            df.loc[mask, 'Anomalies'] = 1
+            #the model is None and can be residuals or just the point itself
+            if kwargs['train_on_residuals']:
+                df.eval('Anomalies = 0', inplace = True)
+
+                if method_type =='iqr':
+                    twenty_fifth = np.percentile(df.Noise, 25)
+                    seventy_fifth = np.percentile(df.Noise, 75)
+                    iqr = seventy_fifth - twenty_fifth
+                    upper_bound = seventy_fifth + (method[method_type] * iqr)
+                    lower_bound = twenty_fifth - (method[method_type] * iqr)
+                    mask = (df.Noise > upper_bound) | (df.Noise < lower_bound)
+                    df.loc[mask, 'Anomalies'] = 1 
+                    df = df[['Data', 'Anomalies']]
+                    df.rename(columns = {'Data': 'Actual'}, inplace = True)
+                else:
+                    #method=SD
+                    upper_sd = np.mean(df.Noise) + int(method[method_type]) * np.std(df.Noise)
+                    lower_sd = np.mean(df.Noise) - int(method[method_type]) * np.std(df.Noise)
+                    mask = (df.Noise > upper_sd) | (df.Noise < lower_sd)
+                    df.loc[mask, 'Anomalies'] = 1 
+                    df = df[['Data', 'Anomalies']] 
+                    df.rename(columns = {'Data': 'Actual'}, inplace = True)              
+            else:
+                #using the data itself without the residuals
+                df.eval('Anomalies = 0', inplace = True)
+                point_name = kwargs['point']
+                if method_type == 'iqr':
+                    twenty_fifth = np.percentile(df[point_name], 25)
+                    seventy_fifth = np.percentile(df[point_name], 75)
+                    iqr = seventy_fifth - twenty_fifth
+                    upper_bound = seventy_fifth + (method[method_type] * iqr)
+                    lower_bound = twenty_fifth - (method[method_type] * iqr)
+                    mask = (df[point_name] > upper_bound) | (df[point_name] < lower_bound)
+                    df.loc[mask, 'Anomalies'] = 1   
+                    df.rename(columns = {kwargs['point']: 'Actual'}, inplace = True)
+                else:
+                    #if using 'sd'
+                    upper_sd = np.mean(df[point_name]) + int(method[method_type]) * np.std(df[point_name])
+                    lower_sd = np.mean(df[point_name]) - int(method[method_type]) * np.std(df[point_name])
+                    mask = (df[point_name] > upper_sd) | (df[point_name] < lower_sd)
+                    df.loc[mask, 'Anomalies'] = 1    
+                    df.rename(columns = {kwargs['point']: 'Actual'}, inplace = True)                                  
             
     return df
     
