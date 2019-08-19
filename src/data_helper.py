@@ -119,6 +119,20 @@ def check_kwargs(kwargs):
         
     return "Good values!"
 
+def check_args(args, model):
+    method = list(args['anomalies_method'].keys())[0]
+    threshold = list(args['anomalies_method'].values())[0]
+    if model is None and method == 'percent':
+        raise ValueError("When model is 'None' method must be 'iqr' or 'sd' only")
+    
+    if not(method == 'iqr' or method == 'sd' or method == 'percent'):
+        raise ValueError(" 'anomalies_method' must be 'iqr' or 'sd' or 'percent'")
+    
+    if not( isinstance(threshold, int) or isinstance(threshold, float)):
+        raise TypeError("Thre threshold must be of type 'int' or 'float'")
+    
+    return "Good 'arg' values!"
+
 #Created by Emma Goldberg
 def split_data(data, split = 0.7):
     """
