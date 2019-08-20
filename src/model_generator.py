@@ -24,7 +24,7 @@ warnings.filterwarnings('ignore')
 #General imports created in-house used across all script
 from .data_helper import *
 cwd = os.getcwd()
-config_path = cwd + '/src/config/lstmconfig.ini'
+config_path = cwd + '/src/config/mylstmconfig.ini'
 config = configparser.ConfigParser()
 something = config.read(config_path)
 eco_tools_path = config['SETUP']['eco_tools_path']
@@ -131,7 +131,10 @@ def create_model(df1, kwargs):
             show_every = int(config['outfiles']['show_every'])
             training_percent =float(kwargs['training_percent']) 
             validation_split = float(1.0 - training_percent)
-            epochs = int(config['model']['epochs'])
+            if kwargs['epochs'] == 'default':
+                epochs = int(config['model']['epochs'])
+            else:
+                epochs = int(kwargs['epochs'])
             n_jobs = int(config['model']['n_jobs'])
             neurons = int(config['model']['neurons'])
             X_train, X_test, y_train, y_test, scaler , train_idx, test_idx = model_split_data(X,y, training_percent) 
