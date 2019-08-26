@@ -420,7 +420,7 @@ def tag_anomalies(df, kwargs, method = {'iqr' : 3.0}):
             df.eval('Anomalies = 0', inplace=True)
             
             if method_type == 'iqr':
-                df.eval('Result = Actual - Modeled', inplace=True)
+                df.eval('Result = Modeled - Actual', inplace=True)
                 twenty_fifth = np.percentile(df.Result, 25)
                 seventy_fifth = np.percentile(df.Result, 75)
                 iqr = seventy_fifth - twenty_fifth
@@ -430,7 +430,7 @@ def tag_anomalies(df, kwargs, method = {'iqr' : 3.0}):
                 mask = (df.Result > upper_bound) | (df.Result < lower_bound)
                 df.loc[mask, 'Anomalies'] = 1
             elif method_type =='sd':
-                df.eval('Result = Actual - Modeled', inplace=True)
+                df.eval('Result = Modeled - Actual', inplace=True)
                 #method=SD
                 upper_sd = np.mean(df.Result) + threshold * np.std(df.Result)
                 lower_sd = np.mean(df.Result) - threshold * np.std(df.Result)
@@ -438,7 +438,7 @@ def tag_anomalies(df, kwargs, method = {'iqr' : 3.0}):
                 df.loc[mask, 'Anomalies'] = 1
             else:
                 
-                df.eval('Result = abs((Actual - Modeled)/Actual * 100)', inplace = True)
+                df.eval('Result = abs((Modeled - Actual)/Actual * 100)', inplace = True)
                 df.loc[df.Result > threshold, 'Anomalies'] = 1
         else:
             #the model is None and can be residuals or just the point itself
