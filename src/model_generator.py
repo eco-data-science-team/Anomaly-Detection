@@ -17,7 +17,7 @@ from sklearn.metrics import mean_squared_error
 from matplotlib.legend_handler import HandlerLine2D
 from statsmodels.tsa.seasonal import seasonal_decompose
 
-#tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 plt.style.use('fivethirtyeight')
 warnings.filterwarnings('ignore')
 
@@ -36,6 +36,8 @@ pc = pi_client(root = 'readonly')
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
+from keras_radam import RAdam
+from .lookahead import Lookahead
 #from keras.callbacks import EarlyStopping
 #from keras.callbacks import ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler
@@ -153,7 +155,8 @@ def create_model(df1, kwargs):
                 model.add(LSTM(neurons))
                 model.add(Dense(1))
                 model.compile(optimizer = Adam(lr = 0.001), loss = 'mean_squared_error')
-
+                lookahead = Lookahead(k=5, alpha = 0.5)
+                lookahead.inject(model)
                 # fit model
                 history = model.fit(X_train, y_train, epochs = epochs, validation_split = validation_split, shuffle = False)
                 # store history
