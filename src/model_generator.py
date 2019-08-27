@@ -154,7 +154,7 @@ def create_model(df1, kwargs):
                 model.add(LSTM(neurons, input_shape=(X_train.shape[1], X_train.shape[2]), return_sequences = True))
                 model.add(LSTM(neurons))
                 model.add(Dense(1))
-                model.compile(optimizer = Adam(lr = 0.001), loss = 'mean_squared_error')
+                model.compile(optimizer = RAdam(), loss = 'mean_squared_error')
                 lookahead = Lookahead(k=5, alpha = 0.5)
                 lookahead.inject(model)
                 # fit model
