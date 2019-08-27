@@ -376,8 +376,9 @@ def find_anomalies(df,args, kwargs):
         #Area of star = W x H so if we want to make it 3 times bigger we would do (3W) x (3H) = 9 x WH and so on
         s = [20 * 16 for n in range(len(idx))]
         num_anomalies = len(idx)
+        anom_perc = round(num_anomalies / len(df) 100, 2)
         plt.scatter(idx,df.loc[df.Anomalies == 1, 'Actual'], label = "Anomalies", color = 'red', marker = '*', linewidth = 2, zorder = 1, s = s, edgecolors = 'white')
-        plt.title(f"{num_anomalies} Anomalies Detected\n Using {method_type} Method with {threshold} threshold")
+        plt.title(f"{num_anomalies} Anomalies Detected ({anom_perc}%) \n Using {method_type} Method with {threshold} threshold")
         plt.suptitle(f"{kwargs['point']}", fontsize = 18)
         plt.ylabel(kwargs['point'])
         plt.legend()
