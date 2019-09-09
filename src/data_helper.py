@@ -81,8 +81,8 @@ def check_kwargs(kwargs):
     if not (kwargs['training_percent'] > 0.0 and kwargs['training_percent'] < 1.0):
         raise ValueError("'training_percent' must be value between 0.0 and 1.0 exclusive")
         
-    if not (kwargs['clean_type'] == 'value' or kwargs['clean_type'] == 'iqr'):
-        raise ValueError("'clean_type' must be either 'value' or 'iqr'")
+    if not (kwargs['clean_type'] == 'value' or kwargs['clean_type'] == 'iqr' or kwargs['clean_type'] == 'rolling_mean'):
+        raise ValueError("'clean_type' must be either 'value' or 'iqr' or 'rolling_mean")
 
     if kwargs['clean_type'] == 'iqr' and not (isinstance(kwargs['threshold'], int) or isinstance(kwargs['threshold'], float)):
         raise ValueError("'threshold' must be of type 'int' or 'float'")
@@ -166,7 +166,7 @@ def split_data(data, split = 0.7):
     return training, testing
 
 #function created by Emma Goldberg
-def clean_data(data, threshold, clean_type = 'value', show_plot=True):
+def clean_data(data, threshold, clean_type = 'value', show_plot=True, kwargs = None):
     """
     function: cleans the data using either a one-value threshold method or an iqr method
     params: 
@@ -207,7 +207,7 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True):
             plot_data(data, args)
 
         return cleaned_data
-    else:
+    elif clean_type == 'iqr':
         #check that the data is a series
         if isinstance(data, pd.Series) is False:
             raise TypeError("'data' must be a Pandas 'Series'")
@@ -225,8 +225,30 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True):
                 print("lower_bound: %f" %lower_bound,"and","upper_bound: %f" %upper_bound)
                 #clean the data
                 cleaned_data = data[(data.values > lower_bound) & (data.values < upper_bound) ]
-                
-        if show_plot:
+    else:# if we do rolling mean cleaning
+        if kwargs['days'] is not None:
+            days = kwargs['days']
+            odd  = True if days % 2 == 1 else False
+            shift_multiplier = int(days/2) if odd else int(days/2)-1
+
+            q75 = data.rolling(24 * days).quantile(0.75).shift(-(24 * shift_multiplier))
+            q25 = data.rolling(24 * days).quantile(0.25).shift(-(24 * shift_multiplier))
+            iqr = q75-q25
+            up_multiplier = kwargs['upper_multiplier']
+            low_multiplier = kwargs['lower_multiplier']
+            upper_bound = q75 + up_multiplier * iqr
+            lower_bound = q25 - low_multiplier * iqr
+            upper_bound.fillna(method = 'bfill', inplace = True)
+            upper_bound.fillna(method = 'ffill', inplace = True)
+            lower_bound.fillna(method = 'bfill', inplace = True)
+            lower_bound.fillna(method = 'ffill', inplace = True)
+
+            cleaned_data = data[(data.values > lower_bound) & (data.values < upper_bound)]
+            print(f"Cleaned shape: {cleaned_data.shape}")
+
+
+
+        if show_plot and (clean_type == 'iqr' or clean_type == 'value'):
             up_label = "Upper: " + str(round(upper_bound,2))
             low_label = "Lower: " + str(round(lower_bound,2))
             title = f"{data.name}\n Training Data"
@@ -234,8 +256,33 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True):
                 'include_hline': True, 'hline_values':[upper_bound, lower_bound] , 'hline_label':[up_label, low_label],'hline_color':'red',
                 'include_vline': False,'legend_size': 18}
             plot_data(data, args)
+        elif show_plot and clean_type == 'rolling_mean':
+            plot_bad_rolling(data, upper = upper_bound, lower = lower_bound)
+
 
         return cleaned_data     
+def plot_bad_rolling(data, upper, lower):
+    figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+
+    bad_upper = data[data.values > upper]
+   
+    bad_lower = data[data.values < lower]
+    s1 = [20 * 25 for n in range(len(bad_upper.index))]
+    s2 = [20 * 25 for n in range(len(bad_lower.index))]
+    points_over_upper = bad_upper.shape[0]
+    points_below_lower = bad_lower.shape[0]
+    plt.plot(data.index, data.values, linewidth = 1, label = 'Actual', zorder = 1)
+
+    plt.plot(upper.index, upper.values, linewidth = 1, label = "Upper", color = "gray", zorder = 2)
+    plt.scatter(bad_upper.index, bad_upper.values, marker = "*", color ="red",linewidth = 2, zorder = 2, s = s1, edgecolors = 'white')
+
+    plt.plot(lower.index, lower.values, linewidth = 1, label = "Lower", color = "gray", zorder = 3)
+    plt.scatter(bad_lower.index, bad_lower, marker = "*", color ="red",linewidth = 2, zorder = 4, s = s2, edgecolors = 'white')
+
+    plt.suptitle(data.name)
+    plt.title(f"{points_over_upper} points above\n{points_below_lower} points below")
+    plt.legend()
+
 
 def split_and_clean(df, kwargs):
     trng_per = kwargs['training_percent']
@@ -243,7 +290,7 @@ def split_and_clean(df, kwargs):
     training = training[kwargs['point']]
     testing = testing[kwargs['point']]
     if kwargs['clean_data']:
-        training = clean_data(training, threshold = kwargs['threshold'], clean_type = kwargs['clean_type'], show_plot = kwargs['show_cutoff_plot'])
+        training = clean_data(training, threshold = kwargs['threshold'], clean_type = kwargs['clean_type'], show_plot = kwargs['show_cutoff_plot'], kwargs = kwargs)
     
     combined = pd.concat([training, testing])
     combined = combined.to_frame()
