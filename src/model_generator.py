@@ -108,6 +108,7 @@ def create_model(df1, kwargs):
     if model_type is not None:
         #if user wants to train the model on the residuals instead of the original data
         if train_on_residuals:
+            
             decomposed = decompose_data(df1[point_name], method = kwargs['method'])
             data = {}
             
@@ -232,12 +233,21 @@ def create_model(df1, kwargs):
                 plt.legend(prop={'size': 14})
                 plt.show()
             else:
-                print(f"  Training R2: {train_r2}")
-                print(f"   Testing R2: {test_r2} \n")
-                print(f"Training RMSE: {train_rmse}")
-                print(f" Testing RMSE: {test_rmse} \n")
-                print(f" Training MAE: {train_mae}")
-                print(f"  Testing MAE: {test_mae} \n")
+                figure(num=None, figsize=(20,5), dpi=80, facecolor='w', edgecolor='k')
+                ax = plt.subplot()
+                ax.plot(train_df.Actual, label = 'Training', linewidth = 1, color = 'green')
+                ax.plot(test_df.Actual, label = 'Test', linewidth = 1, color = 'black')
+                plt.legend(prop={'size': 14})
+                plt.ylabel(point_name)
+                plt.title(f'Trained on: {train_df.shape[0]} points \n Tested on: {test_df.shape[0]} points\nTest R2: {round(train_r2, 3)} RMSE: {round(test_rmse, 3)} MAE: {round(test_mae, 3)}', fontsize = 18)
+                plt.show()
+
+                # print(f"  Training R2: {round(train_r2, 3)}")
+                # print(f"   Testing R2: {round(test_r2, 3)} \n")
+                # print(f"Training RMSE: {round(train_rmse, 3)}")
+                # print(f" Testing RMSE: {round(test_rmse, 3)} \n")
+                # print(f" Training MAE: {round(train_mae, 3)}")
+                # print(f"  Testing MAE: {round(test_mae, 3)} \n")
         else:
             n_estimators = int(config['model']['n_estimators'])
             training_percent =float(kwargs['training_percent']) 

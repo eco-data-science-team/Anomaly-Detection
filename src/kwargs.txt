@@ -1,0 +1,62 @@
+{
+    #the point to be evaluated
+    'point': None,
+    
+    #can be either 'LSTM' or 'Random Forest' or None 
+    'model_type': 'LSTM',
+    
+    'epochs' :'default',
+################################### Data Pre-processing ################################ 
+    
+    #Determining the amount of data that will be used to train the model 0 < training_percent < 1.0
+    'training_percent': 0.7,
+    
+    #determine if user wants the data to be cleaned prior to model generation 
+    'clean_data': True,
+    #rolling mean window size
+    'days' : 9,
+    #iqr multiplier
+    'upper_multiplier': 6,
+    'lower_multiplier': 1.5,
+    
+    #clean_type can be either 'value' (any points below or above a threshold will be cut out)
+    # or 'iqr' (interquantile range)
+    'clean_type': 'rolling_mean',
+
+    
+    # if clean_type is IQR then determine the IQR to cut at, an int or float value (ie. 1.5 or 2)
+    #if clean is 'value' then pass the value  or a list as shown below
+    #if values the threshold =  [lower_bound, upper_bound] (ie. [1200, 3500])
+    'threshold': 3.5,
+    
+    #This will determine if the user wants to see the plot in which the cutoff value(s) are shown 
+    'show_cutoff_plot': True,
+    
+    #This will show if the user wants to see the plot with the cleaned training data and test data combined
+    'show_cleaned_plot': False,
+    
+    #determine what method to use when cleaning the data: 'bfill' (back fill) or 'ffill' (foward fill)  
+    'method': 'bfill',
+    
+########################################### Model Specific Parameters ###################    
+    
+    #determine if model should train on residuals or the normal data, if None
+    'train_on_residuals': True,
+    
+    #For LSTM only,this will generate the plot of the nueral network's validation and mae loss as a function of epochs
+    'show_training_plot' : False,
+    
+    #show the plots of Training (Modeled vs Actual) and Testing (Modeled vs Actual) plots
+    'show_results_plots' : False,
+    
+##################################################### Anomalies #######################
+   
+    #This will determine if the user wants to see the plot with the anomalies
+    'show_anomalies_plot': True,
+    
+    #This will deteremine if the user wants to see a plot with the removed anomalies
+    'show_removed_anomalies_plot': True
+    
+    
+
+}

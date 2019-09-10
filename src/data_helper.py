@@ -244,7 +244,7 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True, kwargs = N
             lower_bound.fillna(method = 'ffill', inplace = True)
 
             cleaned_data = data[(data.values > lower_bound) & (data.values < upper_bound)]
-            print(f"Cleaned shape: {cleaned_data.shape}")
+            
 
 
 
@@ -262,7 +262,7 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True, kwargs = N
 
         return cleaned_data     
 def plot_bad_rolling(data, upper, lower):
-    figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
+    figure(num=None, figsize=(20,5), dpi=80, facecolor='w', edgecolor='k')
 
     bad_upper = data[data.values > upper]
    
@@ -271,16 +271,16 @@ def plot_bad_rolling(data, upper, lower):
     s2 = [20 * 25 for n in range(len(bad_lower.index))]
     points_over_upper = bad_upper.shape[0]
     points_below_lower = bad_lower.shape[0]
-    plt.plot(data.index, data.values, linewidth = 1, label = 'Actual', zorder = 1)
+    plt.plot(data.index, data.values, linewidth = 1, label = data.name, zorder = 1)
 
-    plt.plot(upper.index, upper.values, linewidth = 1, label = "Upper", color = "gray", zorder = 2)
-    plt.scatter(bad_upper.index, bad_upper.values, marker = "*", color ="red",linewidth = 2, zorder = 2, s = s1, edgecolors = 'white')
+    #plt.plot(upper.index, upper.values, linewidth = 1, label = "Upper", color = "gray", zorder = 2)
+    plt.scatter(bad_upper.index, bad_upper.values, marker = ".", color ="orange",linewidth = 2, zorder = 2, s = s1, edgecolors = 'purple')
 
-    plt.plot(lower.index, lower.values, linewidth = 1, label = "Lower", color = "gray", zorder = 3)
-    plt.scatter(bad_lower.index, bad_lower, marker = "*", color ="red",linewidth = 2, zorder = 4, s = s2, edgecolors = 'white')
+    #plt.plot(lower.index, lower.values, linewidth = 1, label = "Lower", color = "gray", zorder = 3)
+    plt.scatter(bad_lower.index, bad_lower, marker = ".", color ="orange",linewidth = 2, zorder = 4, s = s2, edgecolors = 'purple')
 
-    plt.suptitle(data.name)
-    plt.title(f"{points_over_upper} points above\n{points_below_lower} points below")
+    plt.ylabel(data.name)
+    plt.title(f"{points_over_upper + points_below_lower} points removed")
     plt.legend()
 
 
@@ -318,7 +318,8 @@ def decompose_data(data, method = "bfill"):
         else:
         #ensure data is in hourly format
         #check that their method is one of bfill or ffill
-            if method is not "bfill" and method is not "ffill":
+            
+            if not (method == "bfill" or method == "ffill"):
                 raise TypeError("Method needs to be of type either bfill or ffill.")
             else:
                 #may need to add check that data.values are of type int
