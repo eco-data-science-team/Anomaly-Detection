@@ -12,7 +12,7 @@ cwd = os.getcwd()
 config_path = cwd + '/src/config/lstmconfig.ini'
 config = configparser.ConfigParser()
 something = config.read(config_path)
-#multiplier will be 'type': [lower_multiplier, upper_multiplier]
+#iqr multiplier will be {'type': [lower_multiplier, upper_multiplier] }
 multiplier = {'STEAM': [2.0, 6.0], 'CHILLEDWATER' : [2.0, 2.0], 'ELECTRICITY': [2.0, 2.0], 'OTHER' : [3.0, 2.0]}
 
 class Tag(Enum):
