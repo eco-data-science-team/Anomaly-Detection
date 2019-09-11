@@ -22,7 +22,7 @@ class Tag(Enum):
     OTHER = 4
 
 class AnomalyDetection:
-    def __init__(self, kwargs):
+    def __init__(self):
         self.point = None
         self.point_type = None
         self.pc = None
@@ -118,6 +118,11 @@ class AnomalyDetection:
         plt.ylabel(self.point)
         plt.title(f"Cleaned Data")
         plt.legend()
+    def save(self, which = None):
+        if which is None:
+            self.results_data.to_csv(f'{self.point}-Anomalies.csv')
+        else:
+            self.results_data.loc[:, which].to_csv(f'{self.point}-Anomalies.csv')
 
     def _get_anomalies(self):
         days = int(self.kwargs['days'])
