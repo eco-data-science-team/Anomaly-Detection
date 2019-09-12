@@ -9,7 +9,10 @@ from matplotlib import pyplot as plt
 from src.model_generator import *
 from .data_helper import *
 cwd = os.getcwd()
-config_path = cwd + '/src/config/lstmconfig.ini'
+if cwd[-3:] == 'src':
+    config_path = cwd + '/config/lstmconfig.ini'
+else:
+    config_path = cwd + '/src/config/lstmconfig.ini'
 config = configparser.ConfigParser()
 something = config.read(config_path)
 #iqr multiplier will be {'type': [lower_multiplier, upper_multiplier] }
