@@ -84,7 +84,10 @@ class AnomalyDetection:
         self.kwargs.update({'point': self.point})
         self.model_data = split_and_clean(self.point_data, self.kwargs)
 
-    def run_neural_network(self, show_neural_network_running = False):
+    def run_neural_network(self, show_neural_network_running = False, epochs = None):
+        if not(epochs == None) and isinstance(epochs, int):
+            self.kwargs.update({'epochs':epochs})
+
         if show_neural_network_running:
             _, self.results_data = create_model(self.model_data, self.kwargs)
         else:

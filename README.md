@@ -1,4 +1,4 @@
-# Anomaly-Detection
+# Anomaly-Detection and Lite Version
 
 ## Requirements
 
