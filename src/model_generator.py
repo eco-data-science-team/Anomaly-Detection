@@ -239,7 +239,7 @@ def create_model(df1, kwargs):
                 ax.plot(test_df.Actual, label = 'Test', linewidth = 1, color = 'black')
                 plt.legend(prop={'size': 14})
                 plt.ylabel(point_name)
-                plt.title(f'Trained on: {train_df.shape[0]} points \n Tested on: {test_df.shape[0]} points\nTest R2: {round(train_r2, 3)} RMSE: {round(test_rmse, 3)} MAE: {round(test_mae, 3)}', fontsize = 18)
+                plt.title(f'Trained on: {train_df.shape[0]} points \n Tested on: {test_df.shape[0]} points\nTrain: R2: {round(train_r2, 3)} RMSE: {round(train_rmse, 3)} MAE: {round(train_mae, 3)}', fontsize = 18)
                 plt.show()
 
                 # print(f"  Training R2: {round(train_r2, 3)}")

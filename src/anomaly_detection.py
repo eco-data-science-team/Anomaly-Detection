@@ -122,10 +122,12 @@ class AnomalyDetection:
         plt.title(f"Cleaned Data")
         plt.legend()
     def save(self, which = None):
+        from datetime import datetime
+        date = datetime.now().strftime('%m%d%y %H%M')
         if which is None:
-            self.results_data.to_csv(f'{self.point}-Anomalies.csv')
+            self.results_data.to_csv(f'{self.point}_Anomalies_{date}.csv')
         else:
-            self.results_data.loc[:, which].to_csv(f'{self.point}-Anomalies.csv')
+            self.results_data.loc[:, which].to_csv(f'{self.point}_Anomalies_{date}.csv')
 
     def _get_anomalies(self):
         days = int(self.kwargs['days'])
@@ -150,7 +152,7 @@ class AnomalyDetection:
         self.results_data.eval('Anomalies = 0', inplace = True)
         self.results_data.loc[mask, 'Anomalies'] = 1
         num_anomalies = len(self.results_data.loc[self.results_data['Anomalies'] == 1].index)
-        s1 = [20 * 25 for n in range(num_anomalies)]
+        s1 = [20 * 9 for n in range(num_anomalies)]
         
         figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
         

@@ -9,7 +9,7 @@
 ################################### Data Pre-processing ################################ 
     
     #Determining the amount of data that will be used to train the model 0 < training_percent < 1.0
-    'training_percent': 0.7,
+    'training_percent': 0.5,
     
     #determine if user wants the data to be cleaned prior to model generation 
     'clean_data': True,

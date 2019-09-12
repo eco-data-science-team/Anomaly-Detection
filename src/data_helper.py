@@ -258,8 +258,7 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True, kwargs = N
             plot_data(data, args)
         elif show_plot and clean_type == 'rolling_mean':
             plot_bad_rolling(data, upper = upper_bound, lower = lower_bound)
-
-
+        
         return cleaned_data     
 def plot_bad_rolling(data, upper, lower):
     figure(num=None, figsize=(20,5), dpi=80, facecolor='w', edgecolor='k')
