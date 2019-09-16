@@ -38,12 +38,12 @@ from keras.layers import Dense
 from keras.layers import LSTM
 from keras_radam import RAdam
 from .lookahead import Lookahead
-#from keras.callbacks import EarlyStopping
+from keras.callbacks import EarlyStopping
 #from keras.callbacks import ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler
-#es = EarlyStopping(monitor='val_loss', patience = 50, mode = 'min', verbose=1)
+es = EarlyStopping(monitor='val_loss', patience = 5, min_delta= 0.00001, mode = 'min', verbose=1)
 #mc = ModelCheckpoint('best_model.h5', monitor = 'val_loss', mode = 'min', verbose = 1, save_best_only = True)
-#callbacks_list = [es, mc]
+callbacks_list = [es]
 
 # Random Forest Imports
 from sklearn.ensemble import RandomForestRegressor
@@ -159,7 +159,8 @@ def create_model(df1, kwargs):
                 lookahead = Lookahead(k=5, alpha = 0.5)
                 lookahead.inject(model)
                 # fit model
-                history = model.fit(X_train, y_train, epochs = epochs, validation_split = validation_split, shuffle = False)
+                history = model.fit(X_train, y_train, epochs = epochs, validation_data=(X_test, y_test), callbacks = callbacks_list,
+                validation_split = validation_split, shuffle = False)
                 # store history
                 train[str(i)] = history.history['loss']
                 val[str(i)] = history.history['val_loss']

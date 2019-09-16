@@ -136,6 +136,7 @@ class AnomalyDetection:
     def _get_anomalies(self):
         days = int(self.kwargs['days'])
         odd = True if days % 2 == 1 else False
+        #Example: 9 shift multiplier == 5, 8 shift multiplier == 4
         shift_multiplier = int(days / 2) if odd else int(days / 2) - 1
         q75 = self.results_data.Result.rolling(24*days).quantile(0.75).shift(-(24*shift_multiplier))
         q25 = self.results_data.Result.rolling(24*days).quantile(0.25).shift(-(24*shift_multiplier))
