@@ -148,7 +148,7 @@ def create_model(df1, kwargs):
 
             train = pd.DataFrame()
             val = pd.DataFrame()
-            np.random.seed(42)
+            np.random.seed(int(config['model']['random_seed']))
             
             for i in range(n_jobs):
                 model = Sequential()

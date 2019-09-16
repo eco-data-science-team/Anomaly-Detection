@@ -16,8 +16,8 @@ With **Pip**
 ---
 ## Setup
 
-1. Under `src/config` folder open `lstmconfig`
-2. Under `[SETUP]` > `eco_tools_path` change *ECO TOOLS PATH HERE* to the absolute path to your eco-tools folder:
+1. Under `src/config` folder open `lstmconfig.ini` in any text editor
+2. Under `[SETUP]` > `eco_tools_path=` change *ECO TOOLS PATH HERE* to the absolute path to your eco-tools folder:
     
         /Users/mypc/Desktop/eco-tools
 
