@@ -17,11 +17,8 @@ With **Pip**
 ## Setup
 
 1. Under `src/config` folder open `lstmconfig.ini` in any text editor
-2. Under `[SETUP]` > `eco_tools_path=` change *ECO TOOLS PATH HERE* to the absolute path to your eco-tools folder:
-    
-        /Users/mypc/Desktop/eco-tools
 
-3. If you wish you can change various parameters for the `model` section such as the percentage of data you want the model to train on. 
+2. If you wish you can change various parameters for the `model` section such as the percentage of data you want the model to train on. 
 
 ---
 ## Using the Jupyter Notebook (customozable version)

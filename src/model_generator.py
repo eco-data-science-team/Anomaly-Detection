@@ -47,8 +47,6 @@ callbacks_list = [es]
 # Random Forest Imports
 from sklearn.ensemble import RandomForestRegressor
 
-#scaler = MinMaxScaler(feature_range=(0,1))
-
 
 def append_variables(df):
     look_back = int(config['model']['look_back'])
@@ -242,12 +240,7 @@ def create_model(df1, kwargs):
                 plt.title(f'Trained on: {train_df.shape[0]} points \n Tested on: {test_df.shape[0]} points\nTrain: R2: {round(train_r2, 3)} RMSE: {round(train_rmse, 3)} MAE: {round(train_mae, 3)}', fontsize = 18)
                 plt.show()
 
-                # print(f"  Training R2: {round(train_r2, 3)}")
-                # print(f"   Testing R2: {round(test_r2, 3)} \n")
-                # print(f"Training RMSE: {round(train_rmse, 3)}")
-                # print(f" Testing RMSE: {round(test_rmse, 3)} \n")
-                # print(f" Training MAE: {round(train_mae, 3)}")
-                # print(f"  Testing MAE: {round(test_mae, 3)} \n")
+
         else:
             n_estimators = int(config['model']['n_estimators'])
             training_percent =float(kwargs['training_percent']) 
@@ -340,7 +333,7 @@ def create_model(df1, kwargs):
                 print(f"  Testing MAE: {test_mae} \n")
 
         return  train_df, test_df       
-    #return model,X_train, X_test, y_train, y_test, scaler , train_idx, test_idx, data
+ 
 
     else:
         
@@ -369,13 +362,13 @@ def create_model(df1, kwargs):
                 
         
         return df
-        #df = append_variables(df)
+       
             
 def find_anomalies(df,args, kwargs):
-    #model = kwargs['model_type']
+  
     plt.style.use('fivethirtyeight')
     figure(num=None, figsize=(20,10), dpi=80, facecolor='w', edgecolor='k')
-    #if model is not None:
+
     df = tag_anomalies(df,kwargs = kwargs, method = args['anomalies_method'])
     idx = df.loc[df.Anomalies == 1].index
     method_type = list(args['anomalies_method'].keys())[0]
@@ -393,11 +386,7 @@ def find_anomalies(df,args, kwargs):
         plt.ylabel(kwargs['point'])
         plt.legend()
         plt.show()
-            #df.Anomalies.plot(figsize = (20,10))
-        
-        #return df
-    #else:
-        #df = tag_anomalies(df, method = args['anomalies_method'], kwargs = kwargs)
+
 
     return df
 
