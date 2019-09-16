@@ -252,7 +252,7 @@ def create_model(df1, kwargs):
             n_estimators = int(config['model']['n_estimators'])
             training_percent =float(kwargs['training_percent']) 
             max_depth = int(config['model']['max_depth'])
-            random_state = int(config['model']['random_state'])
+            random_state = int(config['model']['random_seed'])
             X_train, X_test, y_train, y_test,  train_idx, test_idx = model_split_data(X,y, training_percent, scale = False)
             rforest = RandomForestRegressor(max_depth = max_depth, n_estimators = n_estimators, random_state= random_state,verbose = 1, n_jobs = -1)
             X_train = X_train.astype(np.float32)
