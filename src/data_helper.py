@@ -81,8 +81,8 @@ def check_kwargs(kwargs):
     if not (kwargs['training_percent'] > 0.0 and kwargs['training_percent'] < 1.0):
         raise ValueError("'training_percent' must be value between 0.0 and 1.0 exclusive")
         
-    if not (kwargs['clean_type'] == 'value' or kwargs['clean_type'] == 'iqr' or kwargs['clean_type'] == 'rolling_mean'):
-        raise ValueError("'clean_type' must be either 'value' or 'iqr' or 'rolling_mean")
+    if not (kwargs['clean_type'] == 'value' or kwargs['clean_type'] == 'iqr' or kwargs['clean_type'] == 'rolling_quantile'):
+        raise ValueError("'clean_type' must be either 'value' or 'iqr' or 'rolling_quantile")
 
     if kwargs['clean_type'] == 'iqr' and not (isinstance(kwargs['threshold'], int) or isinstance(kwargs['threshold'], float)):
         raise ValueError("'threshold' must be of type 'int' or 'float'")
@@ -256,7 +256,7 @@ def clean_data(data, threshold, clean_type = 'value', show_plot=True, kwargs = N
                 'include_hline': True, 'hline_values':[upper_bound, lower_bound] , 'hline_label':[up_label, low_label],'hline_color':'red',
                 'include_vline': False,'legend_size': 18}
             plot_data(data, args)
-        elif show_plot and clean_type == 'rolling_mean':
+        elif show_plot and clean_type == 'rolling_quantile':
             plot_bad_rolling(data, upper = upper_bound, lower = lower_bound)
         
         return cleaned_data     
