@@ -27,10 +27,12 @@ cwd = os.getcwd()
 config_path = cwd + '/src/config/lstmconfig.ini'
 config = configparser.ConfigParser()
 something = config.read(config_path)
-eco_tools_path = config['SETUP']['eco_tools_path']
-sys.path.append(eco_tools_path)
-from ecotools.pi_client import pi_client
-pc = pi_client(root = 'readonly')
+#eco_tools_path = config['SETUP']['eco_tools_path']
+#sys.path.append(eco_tools_path)
+from ._pi_client import PiClient
+pc = PiClient(root = 'readonly')
+#from ecotools.pi_client import pi_client
+#pc = pi_client(root = 'readonly')
 
 # LSTM Specific Imports
 from keras.models import Sequential

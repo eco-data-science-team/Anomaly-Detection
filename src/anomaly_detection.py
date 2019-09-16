@@ -45,10 +45,12 @@ class AnomalyDetection:
         self.epochs = int(config['model']['epochs'])
 
     def _add_eco_tools(self):
-        eco_tools_path = config['SETUP']['eco_tools_path']
-        sys.path.append(eco_tools_path)
-        from ecotools.pi_client import pi_client
-        self.pc = pi_client(root = 'readonly')
+        from ._pi_client import PiClient
+        self.pc = PiClient(root = 'readonly')    
+        #eco_tools_path = config['SETUP']['eco_tools_path']
+        #sys.path.append(eco_tools_path)
+        #from ecotools.pi_client import pi_client
+        #self.pc = pi_client(root = 'readonly')
     
     def _load_kwargs(self):
         cwd = os.getcwd()
