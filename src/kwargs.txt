@@ -21,7 +21,7 @@
     
     #clean_type can be either 'value' (any points below or above a threshold will be cut out)
     # or 'iqr' (interquantile range)
-    'clean_type': 'rolling_mean',
+    'clean_type': 'rolling_quantile',
 
     
     # if clean_type is IQR then determine the IQR to cut at, an int or float value (ie. 1.5 or 2)
